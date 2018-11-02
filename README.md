@@ -4,7 +4,7 @@ Basically a dungeon crawler. Lets see how far I get.
 
 ## First night
 
-I'm using the (termbox-go)[https://github.com/nsf/termbox-go] library to
+I'm using the [termbox-go](https://github.com/nsf/termbox-go) library to
 manage the screen stuff. So far, so good. It's got a really simple
 API, but I can use that to build up higher level constructs. (See: drawString)
 
