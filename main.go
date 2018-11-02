@@ -27,43 +27,68 @@ func (l *logger) draw(x, y int) {
 	}
 }
 
+type attr uint16
+
+const (
+	floor attr = 1 << iota
+	wall
+)
+
+type level struct {
+	layout        []attr
+	width, height int
+}
+
+func (l *level) setAttr(x, y int, what attr) {
+	l.layout[y*l.width+x] = l.layout[y*l.width+x] | what
+}
+
+func (l *level) hasAttr(x, y int, what attr) bool {
+	return l.layout[y*l.width+x]&what != 0
+}
+
 type sprite struct {
 	x, y int
 	c    rune
 }
 
-func (s *sprite) move(dx, dy int) {
-	width, height := termbox.Size()
-	s.x += dx
-	if s.x < 0 {
-		s.x = 0
-	} else if s.x > width {
-		s.x = width
-	}
-	s.y += dy
-	if s.y < 0 {
-		s.y = 0
-	} else if s.y > height {
-		s.y = height
+func cap(min, max, value int) int {
+	if value < min {
+		return min
+	} else if value > max {
+		return max
+	} else {
+		return value
 	}
 }
 
-func (s *sprite) handleKeyEvent(e termbox.Event) {
+func (s *sprite) move(dx, dy int, l *level) {
+	width, height := termbox.Size()
+	x := cap(0, width, s.x+dx)
+	y := cap(0, height, s.y+dy)
+
+	if !l.hasAttr(x, y, wall) {
+		s.x = x
+		s.y = y
+	}
+}
+
+func (s *sprite) handleKeyEvent(e termbox.Event, l *level) {
 	if e.Ch != 0 {
 		return
 	}
 	switch e.Key {
 	case termbox.KeyArrowLeft:
-		s.move(-1, 0)
+		s.move(-1, 0, l)
 		return
 	case termbox.KeyArrowRight:
-		s.move(1, 0)
+		s.move(1, 0, l)
 		return
 	case termbox.KeyArrowUp:
-		s.move(0, -1)
+		s.move(0, -1, l)
 		return
 	case termbox.KeyArrowDown:
-		s.move(0, 1)
+		s.move(0, 1, l)
 		return
 	}
 }
@@ -78,24 +103,44 @@ func drawString(x, y int, msg string) {
 	}
 }
 
-func drawBox(top, left, bottom, right int, c rune) {
-	for x := left; x < right; x++ {
-		termbox.SetCell(x, top, c, termbox.ColorBlue, termbox.ColorBlack)
-		termbox.SetCell(x, bottom, c, termbox.ColorBlue, termbox.ColorBlack)
+func (l *level) drawRoom(top, left, bottom, right int) {
+	for x := left; x <= right; x++ {
+		for y := top; y <= bottom; y++ {
+			if x == left || x == right || y == top || y == bottom {
+				l.setAttr(x, y, wall)
+			} else {
+				l.setAttr(x, y, floor)
+			}
+		}
 	}
-
-	for y := top + 1; y < bottom; y++ {
-		termbox.SetCell(left, y, c, termbox.ColorGreen, termbox.ColorBlack)
-		termbox.SetCell(right-1, y, c, termbox.ColorGreen, termbox.ColorBlack)
-	}
-
-	termbox.Flush()
 }
 
-func drawMap() {
-	drawString(5, 5, "Hello")
-	drawString(12, 5, "World")
-	drawBox(4, 4, 6, 18, '#')
+func (l *level) draw() {
+	for x := 0; x < l.width; x++ {
+		for y := 0; y < l.height; y++ {
+			var c rune
+			if l.hasAttr(x, y, wall) {
+				c = '#'
+			} else if l.hasAttr(x, y, floor) {
+				c = '.'
+			} else {
+				c = ' '
+			}
+			drawString(x, y, string(c))
+		}
+	}
+}
+
+func makeLevel() level {
+	w, h := termbox.Size()
+	var l = level{
+		width:  w,
+		height: h,
+		layout: make([]attr, w*h),
+	}
+
+	l.drawRoom(1, 1, 8, 8)
+	return l
 }
 
 func main() {
@@ -114,21 +159,26 @@ func main() {
 	}()
 
 	var player = sprite{
-		x: 9,
-		y: 9,
+		x: 5,
+		y: 5,
 		c: '@',
 	}
-	//var l = logger{display: 3}
+
+	var l = makeLevel()
+
+	l.draw()
+	termbox.Flush()
+
 	for e := range events {
 		if e.Ch == 'q' {
 			break
 		}
 		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-		drawMap()
 		if e.Type == termbox.EventKey {
-			player.handleKeyEvent(e)
-			player.draw()
+			player.handleKeyEvent(e, &l)
 		}
+		l.draw()
+		player.draw()
 		termbox.Flush()
 	}
 }
