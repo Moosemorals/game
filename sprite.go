@@ -10,7 +10,9 @@ type sprite struct {
 }
 
 func (s *sprite) move(dx, dy int, context *context) {
-	width, height := termbox.Size()
+	width := context.size.x
+	height := context.size.y
+
 	x := cap(0, width, s.x+dx)
 	y := cap(0, height, s.y+dy)
 

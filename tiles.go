@@ -54,8 +54,13 @@ func (d *door) tile() tile {
 	return '|'
 }
 
-func (d *door) handleKeyEvent(e termbox.Event, context *context) {
-	if e.Ch == 'o' && d.dist(context.player.point) <= 2 {
+func (d *door) handleKeyEvent(e termbox.Event, c *context) {
+	if e.Ch == 'o' && d.dist(c.player.point) <= 2 {
+		if d.open {
+			c.log("Closing door")
+		} else {
+			c.log("Opening door")
+		}
 		d.open = !d.open
 	}
 }

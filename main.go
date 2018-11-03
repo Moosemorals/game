@@ -10,20 +10,28 @@ type keyHandler interface {
 }
 
 type context struct {
-	player *sprite
-	level  *level
+	size    point
+	player  *sprite
+	level   *level
+	loggger *logger
 }
 
 func (c *context) draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	c.level.draw()
 	c.player.draw()
+
+	c.loggger.draw(1, c.size.y-(1+c.loggger.display))
 	termbox.Flush()
 }
 
 func (c *context) handleKeyEvent(e termbox.Event) {
 	c.level.handleKeyEvent(e, c)
 	c.player.handleKeyEvent(e, c)
+}
+
+func (c *context) log(msg string) {
+	c.loggger.log(msg)
 }
 
 func cap(min, max, value int) int {
@@ -56,18 +64,21 @@ func main() {
 		}
 	}()
 
-	var context context
+	var size point
+	size.x, size.y = termbox.Size()
 
-	context.player = &sprite{
-		point: point{
-			x: 5,
-			y: 5,
+	context := context{
+		size: size,
+		player: &sprite{
+			point: point{
+				x: 5,
+				y: 5,
+			},
+			c: '@',
 		},
-		c: '@',
+		level:   makeLevel(size.x, size.y),
+		loggger: &logger{display: 3},
 	}
-
-	context.level = makeLevel()
-
 	context.draw()
 
 	for e := range events {

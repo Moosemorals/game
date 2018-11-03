@@ -53,8 +53,7 @@ func (l *level) draw() {
 	}
 }
 
-func makeLevel() *level {
-	w, h := termbox.Size()
+func makeLevel(w, h int) *level {
 	var l = level{
 		width:  w,
 		height: h,
