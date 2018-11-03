@@ -21,7 +21,7 @@ func (c *context) draw() {
 	c.level.draw()
 	c.player.draw()
 
-	c.loggger.draw(1, c.size.y-(1+c.loggger.display))
+	c.loggger.draw(point{1, c.size.y - (1 + c.loggger.display)})
 	termbox.Flush()
 }
 
@@ -43,9 +43,9 @@ func cap(min, max, value int) int {
 		return value
 	}
 }
-func drawString(x, y int, msg string) {
+func drawString(at point, msg string) {
 	for i, c := range msg {
-		termbox.SetCell(x+i, y, c, termbox.ColorBlue, termbox.ColorBlack)
+		termbox.SetCell(at.x+i, at.y, c, termbox.ColorBlue, termbox.ColorBlack)
 	}
 }
 
@@ -79,7 +79,7 @@ func main() {
 		level:   makeLevel(size.x, size.y),
 		loggger: &logger{display: 3},
 	}
-	context.level.visit(context.player.x, context.player.y)
+	context.level.visit(context.player.point)
 	context.draw()
 
 	for e := range events {

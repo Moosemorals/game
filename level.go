@@ -22,63 +22,67 @@ type level struct {
 	width, height int
 }
 
-func (l *level) setTile(x, y int, tile tiler) {
-	l.layout[y*l.width+x] = tile
+func (l *level) toIndex(p point) int {
+	return p.y*l.width + p.x
 }
 
-func (l *level) tile(x, y int) tiler {
-	return l.layout[y*l.width+x]
+func (l *level) setTile(p point, tile tiler) {
+	l.layout[l.toIndex(p)] = tile
+}
+
+func (l *level) tile(p point) tiler {
+	return l.layout[l.toIndex(p)]
 }
 
 func (l *level) drawRoom(top, left, bottom, right int) {
-	for x := left; x <= right; x++ {
-		for y := top; y <= bottom; y++ {
-			if x == left || x == right || y == top || y == bottom {
-				if x == left {
-					if y == top {
-						l.setTile(x, y, &wall{g: wallTopLeft})
-					} else if y == bottom {
-						l.setTile(x, y, &wall{g: wallBottomLeft})
+	var p point
+	for p.x = left; p.x <= right; p.x++ {
+		for p.y = top; p.y <= bottom; p.y++ {
+			if p.x == left || p.x == right || p.y == top || p.y == bottom {
+				if p.x == left {
+					if p.y == top {
+						l.setTile(p, &wall{g: wallTopLeft})
+					} else if p.y == bottom {
+						l.setTile(p, &wall{g: wallBottomLeft})
 					} else {
-						l.setTile(x, y, &wall{g: wallVertical})
+						l.setTile(p, &wall{g: wallVertical})
 					}
-				} else if x == right {
-					if y == top {
-						l.setTile(x, y, &wall{g: wallTopRight})
-					} else if y == bottom {
-						l.setTile(x, y, &wall{g: wallBottomRight})
+				} else if p.x == right {
+					if p.y == top {
+						l.setTile(p, &wall{g: wallTopRight})
+					} else if p.y == bottom {
+						l.setTile(p, &wall{g: wallBottomRight})
 					} else {
-						l.setTile(x, y, &wall{g: wallVertical})
+						l.setTile(p, &wall{g: wallVertical})
 					}
 				} else {
-					l.setTile(x, y, &wall{g: wallHorizontal})
+					l.setTile(p, &wall{g: wallHorizontal})
 				}
 			} else {
-				l.setTile(x, y, new(floor))
+				l.setTile(p, new(floor))
 			}
 		}
 	}
-	l.setTile(right, (bottom-top)/2, &door{
+	var dpoint = point{right, (bottom - top) / 2}
+	l.setTile(dpoint, &door{
 		open:       false,
 		horizontal: false,
-		point: point{
-			x: right,
-			y: (bottom - top) / 2,
-		},
+		point:      dpoint,
 	})
 }
 
 func (l *level) draw() {
-	for x := 0; x < l.width; x++ {
-		for y := 0; y < l.height; y++ {
+	var p point
+	for p.x = 0; p.x < l.width; p.x++ {
+		for p.y = 0; p.y < l.height; p.y++ {
 			var c glyph
-			tile := l.tile(x, y)
-			if tile != nil && l.hasVisited(x, y) {
+			tile := l.tile(p)
+			if tile != nil && l.hasVisited(p) {
 				c = tile.glyph()
 			} else {
 				c = ' '
 			}
-			drawString(x, y, string(c))
+			drawString(p, string(c))
 		}
 	}
 }
@@ -96,9 +100,10 @@ func makeLevel(w, h int) *level {
 }
 
 func (l *level) handleKeyEvent(e termbox.Event, context *context) {
-	for x := 0; x < l.width; x++ {
-		for y := 0; y < l.height; y++ {
-			tile := l.tile(x, y)
+	var p point
+	for p.x = 0; p.x < l.width; p.x++ {
+		for p.y = 0; p.y < l.height; p.y++ {
+			tile := l.tile(p)
 			handler, ok := tile.(keyHandler)
 			if ok {
 				handler.handleKeyEvent(e, context)
@@ -107,25 +112,26 @@ func (l *level) handleKeyEvent(e termbox.Event, context *context) {
 	}
 }
 
-func (l *level) isValidPoint(x, y int) bool {
-	index := y*l.width + x
+func (l *level) isValidPoint(p point) bool {
+	index := p.y*l.width + p.x
 	return index >= 0 && index < len(l.layout)
 }
 
-func (l *level) setAttribute(x, y int, a attr) {
-	l.attributes[y*l.width+x].set(visited)
+func (l *level) setAttribute(p point, a attr) {
+	l.attributes[p.y*l.width+p.x].set(visited)
 }
 
-func (l *level) visit(x, y int) {
-	for dx := -1; dx <= 1; dx++ {
-		for dy := -1; dy <= 1; dy++ {
-			if l.isValidPoint(x+dx, y+dy) {
-				l.setAttribute(x+dx, y+dy, visited)
+func (l *level) visit(p point) {
+	var delta point
+	for delta.x = -1; delta.x <= 1; delta.x++ {
+		for delta.y = -1; delta.y <= 1; delta.y++ {
+			if l.isValidPoint(p.add(delta)) {
+				l.setAttribute(p.add(delta), visited)
 			}
 		}
 	}
 }
 
-func (l *level) hasVisited(x, y int) bool {
-	return l.attributes[y*l.width+x].has(visited)
+func (l *level) hasVisited(p point) bool {
+	return l.attributes[p.y*l.width+p.x].has(visited)
 }

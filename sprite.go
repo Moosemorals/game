@@ -10,17 +10,15 @@ type sprite struct {
 }
 
 func (s *sprite) move(dx, dy int, c *context) {
-	width := c.size.x
-	height := c.size.y
-
-	x := cap(0, width, s.x+dx)
-	y := cap(0, height, s.y+dy)
-
-	tile := c.level.tile(x, y)
+	size := c.size
+	dest := point{
+		x: cap(0, size.x, s.x+dx),
+		y: cap(0, size.y, s.y+dy),
+	}
+	tile := c.level.tile(dest)
 	if tile != nil && tile.isPassable(s) {
-		s.x = x
-		s.y = y
-		c.level.visit(x, y)
+		s.point = dest
+		c.level.visit(dest)
 	}
 }
 
@@ -45,5 +43,5 @@ func (s *sprite) handleKeyEvent(e termbox.Event, context *context) {
 }
 
 func (s *sprite) draw() {
-	drawString(s.x, s.y, string(s.c))
+	drawString(s.point, string(s.c))
 }

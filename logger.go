@@ -16,8 +16,8 @@ func (l *logger) upTo() int {
 	return len(l.lines)
 }
 
-func (l *logger) draw(x, y int) {
+func (l *logger) draw(p point) {
 	for i := 0; i < l.upTo(); i++ {
-		drawString(x, y+i, l.lines[len(l.lines)-(i+1)])
+		drawString(p.add(point{0, i}), l.lines[len(l.lines)-(i+1)])
 	}
 }
