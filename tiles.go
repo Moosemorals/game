@@ -11,7 +11,8 @@ type tiler interface {
 	tile() tile
 }
 
-type wall struct{}
+type wall struct {
+}
 
 func (w *wall) isPassable(s *sprite) bool {
 	return false
@@ -21,7 +22,8 @@ func (w *wall) tile() tile {
 	return '#'
 }
 
-type floor struct{}
+type floor struct {
+}
 
 func (f *floor) isPassable(s *sprite) bool {
 	return true
@@ -32,6 +34,7 @@ func (f *floor) tile() tile {
 }
 
 type door struct {
+	point
 	open       bool
 	horizontal bool
 }
@@ -52,7 +55,7 @@ func (d *door) tile() tile {
 }
 
 func (d *door) handleKeyEvent(e termbox.Event, context *context) {
-	if e.Ch == 'o' {
+	if e.Ch == 'o' && d.dist(context.player.point) <= 2 {
 		d.open = !d.open
 	}
 }

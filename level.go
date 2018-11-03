@@ -20,7 +20,14 @@ func (l *level) drawRoom(top, left, bottom, right int) {
 		for y := top; y <= bottom; y++ {
 			if x == left || x == right || y == top || y == bottom {
 				if (x == right) && (y == (bottom-top)/2) {
-					l.setTile(x, y, &door{open: false, horizontal: false})
+					l.setTile(x, y, &door{
+						open:       false,
+						horizontal: false,
+						point: point{
+							x: x,
+							y: y,
+						},
+					})
 				} else {
 					l.setTile(x, y, new(wall))
 				}

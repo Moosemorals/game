@@ -5,8 +5,8 @@ import (
 )
 
 type sprite struct {
-	x, y int
-	c    rune
+	point
+	c rune
 }
 
 func (s *sprite) move(dx, dy int, context *context) {

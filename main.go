@@ -59,8 +59,10 @@ func main() {
 	var context context
 
 	context.player = &sprite{
-		x: 5,
-		y: 5,
+		point: point{
+			x: 5,
+			y: 5,
+		},
 		c: '@',
 	}
 
