@@ -4,33 +4,43 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-type tile rune
+type glyph rune
 
 type tiler interface {
 	isPassable(s *sprite) bool
-	tile() tile
+	glyph() glyph
 }
 
+const (
+	wallTopLeft     glyph = '\u250f'
+	wallHorizontal  glyph = '\u2501'
+	wallTopRight    glyph = '\u2513'
+	wallVertical    glyph = '\u2503'
+	wallBottomLeft  glyph = '\u2517'
+	wallBottomRight glyph = '\u251b'
+	floorTile       glyph = '.'
+)
+
 type wall struct {
+	g glyph
 }
 
 func (w *wall) isPassable(s *sprite) bool {
 	return false
 }
 
-func (w *wall) tile() tile {
-	return '#'
+func (w *wall) glyph() glyph {
+	return w.g
 }
 
-type floor struct {
-}
+type floor struct{}
 
 func (f *floor) isPassable(s *sprite) bool {
 	return true
 }
 
-func (f *floor) tile() tile {
-	return '.'
+func (f *floor) glyph() glyph {
+	return floorTile
 }
 
 type door struct {
@@ -43,15 +53,13 @@ func (d *door) isPassable(s *sprite) bool {
 	return d.open
 }
 
-func (d *door) tile() tile {
-	if d.open && d.horizontal {
-		return '/'
-	} else if d.open && !d.horizontal {
-		return '\\'
-	} else if !d.open && d.horizontal {
-		return '-'
+func (d *door) glyph() glyph {
+	if d.open {
+		return floorTile
+	} else if d.horizontal {
+		return '\u2500'
 	}
-	return '|'
+	return '\u2502'
 }
 
 func (d *door) handleKeyEvent(e termbox.Event, c *context) {

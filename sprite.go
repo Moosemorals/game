@@ -9,17 +9,18 @@ type sprite struct {
 	c rune
 }
 
-func (s *sprite) move(dx, dy int, context *context) {
-	width := context.size.x
-	height := context.size.y
+func (s *sprite) move(dx, dy int, c *context) {
+	width := c.size.x
+	height := c.size.y
 
 	x := cap(0, width, s.x+dx)
 	y := cap(0, height, s.y+dy)
 
-	tile := context.level.tile(x, y)
+	tile := c.level.tile(x, y)
 	if tile != nil && tile.isPassable(s) {
 		s.x = x
 		s.y = y
+		c.level.visit(x, y)
 	}
 }
 

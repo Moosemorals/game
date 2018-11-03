@@ -79,6 +79,7 @@ func main() {
 		level:   makeLevel(size.x, size.y),
 		loggger: &logger{display: 3},
 	}
+	context.level.visit(context.player.x, context.player.y)
 	context.draw()
 
 	for e := range events {
