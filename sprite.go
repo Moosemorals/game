@@ -1,39 +1,42 @@
 package main
 
-import "github.com/nsf/termbox-go"
+import (
+	"github.com/nsf/termbox-go"
+)
 
 type sprite struct {
 	x, y int
 	c    rune
 }
 
-func (s *sprite) move(dx, dy int, l *level) {
+func (s *sprite) move(dx, dy int, context *context) {
 	width, height := termbox.Size()
 	x := cap(0, width, s.x+dx)
 	y := cap(0, height, s.y+dy)
 
-	if l.tile(x, y).isPassable(s) {
+	tile := context.level.tile(x, y)
+	if tile != nil && tile.isPassable(s) {
 		s.x = x
 		s.y = y
 	}
 }
 
-func (s *sprite) handleKeyEvent(e termbox.Event, l *level) {
+func (s *sprite) handleKeyEvent(e termbox.Event, context *context) {
 	if e.Ch != 0 {
 		return
 	}
 	switch e.Key {
 	case termbox.KeyArrowLeft:
-		s.move(-1, 0, l)
+		s.move(-1, 0, context)
 		return
 	case termbox.KeyArrowRight:
-		s.move(1, 0, l)
+		s.move(1, 0, context)
 		return
 	case termbox.KeyArrowUp:
-		s.move(0, -1, l)
+		s.move(0, -1, context)
 		return
 	case termbox.KeyArrowDown:
-		s.move(0, 1, l)
+		s.move(0, 1, context)
 		return
 	}
 }

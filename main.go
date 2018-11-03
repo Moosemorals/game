@@ -5,6 +5,27 @@ import (
 	"log"
 )
 
+type keyHandler interface {
+	handleKeyEvent(termbox.Event, *context)
+}
+
+type context struct {
+	player *sprite
+	level  *level
+}
+
+func (c *context) draw() {
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	c.level.draw()
+	c.player.draw()
+	termbox.Flush()
+}
+
+func (c *context) handleKeyEvent(e termbox.Event) {
+	c.level.handleKeyEvent(e, c)
+	c.player.handleKeyEvent(e, c)
+}
+
 func cap(min, max, value int) int {
 	if value < min {
 		return min
@@ -35,27 +56,25 @@ func main() {
 		}
 	}()
 
-	var player = sprite{
+	var context context
+
+	context.player = &sprite{
 		x: 5,
 		y: 5,
 		c: '@',
 	}
 
-	var l = makeLevel()
+	context.level = makeLevel()
 
-	l.draw()
-	termbox.Flush()
+	context.draw()
 
 	for e := range events {
 		if e.Ch == 'q' {
 			break
 		}
-		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 		if e.Type == termbox.EventKey {
-			player.handleKeyEvent(e, &l)
+			context.handleKeyEvent(e)
 		}
-		l.draw()
-		player.draw()
-		termbox.Flush()
+		context.draw()
 	}
 }

@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/nsf/termbox-go"
+)
+
 type tile rune
 
 type tiler interface {
@@ -45,4 +49,10 @@ func (d *door) tile() tile {
 		return '-'
 	}
 	return '|'
+}
+
+func (d *door) handleKeyEvent(e termbox.Event, context *context) {
+	if e.Ch == 'o' {
+		d.open = !d.open
+	}
 }
