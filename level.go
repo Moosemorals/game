@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/nsf/termbox-go"
+	"log"
 	"math"
 	"math/rand"
 )
@@ -172,16 +173,15 @@ func buildTree(b *box, depth int) *node {
 	root := &node{box: b}
 	if depth > 0 {
 		leftBox, rightBox := splitBox(b, depth%2 == 0)
-		if leftBox.w > 4 && leftBox.h > 4 && rightBox.w > 4 && rightBox.h > 4 {
-			root.left = buildTree(leftBox, depth-1)
-			root.right = buildTree(rightBox, depth-1)
-		}
+		root.left = buildTree(leftBox, depth-1)
+		root.right = buildTree(rightBox, depth-1)
 	}
 	return root
 }
 
 func boxToRoom(b *box) *box {
 	var r box
+	tries := 3
 	for {
 		r.x = b.x + random(0, b.x/3)
 		r.y = b.y + random(0, b.y/3)
@@ -189,6 +189,10 @@ func boxToRoom(b *box) *box {
 		r.h = b.h - (r.y - b.y)
 		if r.w > 3 && r.h > 3 {
 			return &r
+		}
+		tries--
+		if tries == 0 {
+			return nil
 		}
 	}
 }
@@ -207,12 +211,19 @@ func makeLevel(w, h int) *level {
 	boxes := tree.boxes()
 
 	for _, b := range boxes {
-		if rand.Float64() > .5 {
+		r := boxToRoom(b)
+		if r == nil {
 			continue
 		}
-		r := boxToRoom(b)
+		ratio := float64(r.w) / float64(r.h)
+		log.Printf("ratio %f\n", ratio)
+		if ratio < .7 || ratio > 4 {
+			continue
+		}
 		l.drawRoom(r.x, r.y, r.x+r.w-1, r.y+r.h-1)
 	}
+
+	log.Println("Done with make")
 
 	return &l
 }

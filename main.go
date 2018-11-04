@@ -52,15 +52,9 @@ func drawString(at point, msg string) {
 }
 
 func main() {
+	rand.Seed(1)
+
 	var size point
-	err := termbox.Init()
-	if err != nil {
-		log.Panic(err)
-	}
-	defer termbox.Close()
-
-	rand.Seed(2)
-
 	//size.x, size.y = termbox.Size()
 	size.x = 100
 	size.y = 50
@@ -78,11 +72,17 @@ func main() {
 		loggger: &logger{display: 3},
 	}
 
+	context.level.visit(context.player.point)
+
 	if false {
 		os.Exit(0)
 	}
 
-	context.level.visit(context.player.point)
+	err := termbox.Init()
+	if err != nil {
+		log.Panic(err)
+	}
+	defer termbox.Close()
 
 	events := make(chan termbox.Event)
 	go func() {
