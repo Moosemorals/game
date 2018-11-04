@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/nsf/termbox-go"
 	"log"
+	"math/rand"
+	"os"
 )
 
 type keyHandler interface {
@@ -50,22 +52,18 @@ func drawString(at point, msg string) {
 }
 
 func main() {
+	var size point
 	err := termbox.Init()
 	if err != nil {
 		log.Panic(err)
 	}
 	defer termbox.Close()
 
-	events := make(chan termbox.Event)
+	rand.Seed(2)
 
-	go func() {
-		for {
-			events <- termbox.PollEvent()
-		}
-	}()
-
-	var size point
-	size.x, size.y = termbox.Size()
+	//size.x, size.y = termbox.Size()
+	size.x = 100
+	size.y = 50
 
 	context := context{
 		size: size,
@@ -79,7 +77,20 @@ func main() {
 		level:   makeLevel(size.x, size.y),
 		loggger: &logger{display: 3},
 	}
+
+	if false {
+		os.Exit(0)
+	}
+
 	context.level.visit(context.player.point)
+
+	events := make(chan termbox.Event)
+	go func() {
+		for {
+			events <- termbox.PollEvent()
+		}
+	}()
+
 	context.draw()
 
 	for e := range events {
