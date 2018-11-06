@@ -30,3 +30,8 @@ doors check their state. Then levels becomes and array of passables,
 and the wall and door types implment that interface. Feels clunky.
 
 I'll have a think about it.
+
+
+## Links
+
+ Room generation code loosley based on https://eskerda.com/bsp-dungeon-generation/

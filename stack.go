@@ -4,19 +4,19 @@ import (
 	"log"
 )
 
-type boxStack []*box
+type roomStack []*room
 
-func (s *boxStack) push(b *box) {
+func (s *roomStack) push(b *room) {
 	*s = append(*s, b)
 }
 
-func (s *boxStack) pop() *box {
+func (s *roomStack) pop() *room {
 	res := (*s)[len(*s)-1]
 	*s = (*s)[:len(*s)-1]
 	return res
 }
 
-func (s *boxStack) peek(n int) *box {
+func (s *roomStack) peek(n int) *room {
 	index := len(*s) - (n + 1)
 	log.Printf("peek len %d %d %d\n", len(*s), n, index)
 	return (*s)[index]
