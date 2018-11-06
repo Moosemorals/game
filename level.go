@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"sort"
 )
 
 type attr uint32
@@ -101,11 +102,13 @@ func (l *level) draw() {
 }
 
 // Generation code loosley based on https://eskerda.com/bsp-dungeon-generation/
-
 type box struct {
 	x, y, w, h int
 }
 
+func (b *box) tl() point {
+	return point{b.x, b.y}
+}
 func (b *box) center() point {
 	return point{b.x + b.w/2, b.y + b.h/2}
 }
@@ -197,7 +200,80 @@ func boxToRoom(b *box) *box {
 	}
 }
 
-// End generation code
+func orientation(p, q, r point) int {
+	o := (q.y-p.y)*(r.x-q.x) - (q.x-p.x)*(r.y-q.y)
+	if o == 0 {
+		return 0
+	} else if 0 > 0 {
+		return 1
+	}
+	return 2
+}
+
+func calcHull(rooms []*box) []*box {
+
+	// Find room with smallest y
+	index := 0
+	minY := rooms[0].center().y
+	for i := 1; i < len(rooms); i++ {
+		r := rooms[i]
+		if r.center().y < minY || (r.center().y == minY && r.center().x < rooms[index].center().x) {
+			minY = r.center().y
+			index = i
+		}
+	}
+
+	// Swap rooms[0] with point with the lowest y
+	if index > 0 {
+		rooms[0], rooms[index] = rooms[index], rooms[0]
+	}
+
+	p := rooms[0]
+	p0 := p.center()
+	hull := rooms[1:]
+
+	// Sort points by polar angle with points[0]
+	sort.SliceStable(hull, func(i, j int) bool {
+		left := rooms[i].center()
+		right := rooms[j].center()
+		o := orientation(p0, left, right)
+		if o == 0 {
+			return p0.dist(right) >= p0.dist(left)
+		}
+		return o == 2
+	})
+
+	hull = append([]*box{p}, hull...)
+
+	m := 1
+	for i := 1; i < len(hull); i++ {
+		for i < len(hull)-1 && orientation(p0, hull[i].center(), hull[i+1].center()) == 0 {
+			i++
+		}
+		hull[m] = hull[i]
+		m++
+	}
+
+	if m < 3 {
+		log.Panic("Not enough rooms")
+	}
+
+	var stack boxStack
+	stack.push(hull[0])
+	stack.push(hull[1])
+	stack.push(hull[2])
+
+	for i := 3; i < m; i++ {
+		for orientation(stack.peek(1).center(), stack.peek(0).center(), hull[i].center()) != 2 {
+			stack.pop()
+		}
+		stack.push(hull[i])
+	}
+
+	log.Println("stack ", stack)
+	log.Println("rooms ", rooms)
+	return stack
+}
 
 func makeLevel(w, h int) *level {
 	var l = level{
@@ -210,6 +286,7 @@ func makeLevel(w, h int) *level {
 	tree := buildTree(&box{0, 0, w - 1, h - 1}, 5)
 	boxes := tree.boxes()
 
+	var rooms []*box
 	for _, b := range boxes {
 		r := boxToRoom(b)
 		if r == nil {
@@ -220,9 +297,14 @@ func makeLevel(w, h int) *level {
 		if ratio < .7 || ratio > 4 {
 			continue
 		}
-		l.drawRoom(r.x, r.y, r.x+r.w-1, r.y+r.h-1)
+		rooms = append(rooms, r)
 	}
 
+	//	hull := calcHull(rooms)
+
+	for _, r := range rooms {
+		l.drawRoom(r.x, r.y, r.x+r.w-1, r.y+r.h-1)
+	}
 	log.Println("Done with make")
 
 	return &l
