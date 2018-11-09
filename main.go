@@ -52,7 +52,7 @@ func drawString(at point, msg string) {
 }
 
 func main() {
-	rand.Seed(1)
+	rand.Seed(4)
 
 	var size point
 	//size.x, size.y = termbox.Size()

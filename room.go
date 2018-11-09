@@ -5,6 +5,13 @@ import (
 	"math/rand"
 )
 
+func random(min, max int) int {
+	if (max - min) <= 0 {
+		return 0
+	}
+	return rand.Intn(max-min) + min
+}
+
 type room struct {
 	x, y, w, h int
 }
@@ -23,13 +30,6 @@ func (n *node) rooms() []*room {
 		return append(n.left.rooms(), n.right.rooms()...)
 	}
 	return []*room{n.box}
-}
-
-func random(min, max int) int {
-	if (max - min) == 0 {
-		return 0
-	}
-	return rand.Intn(max-min) + min
 }
 
 func splitRoom(r *room, vh bool) (left, right *room) {
@@ -86,8 +86,8 @@ func resizeRoom(r *room) *room {
 	var out room
 	tries := 3
 	for {
-		out.x = r.x + random(0, r.x/3)
-		out.y = r.y + random(0, r.y/3)
+		out.x = r.x + random(1, r.x/3)
+		out.y = r.y + random(1, r.y/3)
 		out.w = r.w - (out.x - r.x)
 		out.h = r.h - (out.y - r.y)
 		if out.w > 3 && out.h > 3 {
@@ -98,16 +98,6 @@ func resizeRoom(r *room) *room {
 			return nil
 		}
 	}
-}
-
-func orientation(p, q, r point) int {
-	o := (q.y-p.y)*(r.x-q.x) - (q.x-p.x)*(r.y-q.y)
-	if o == 0 {
-		return 0
-	} else if 0 > 0 {
-		return 1
-	}
-	return 2
 }
 
 func (r *room) draw(l *level) {

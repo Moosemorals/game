@@ -67,7 +67,7 @@ func makeLevel(w, h int) *level {
 		attributes: make([]attr, w*h),
 	}
 
-	tree := buildRooms(&room{0, 0, w - 1, h - 1}, 5)
+	tree := buildRooms(&room{0, 0, w - 1, h - 1}, 4)
 	candidates := tree.rooms()
 
 	var rooms []*room
@@ -76,12 +76,16 @@ func makeLevel(w, h int) *level {
 		if r == nil {
 			continue
 		}
-		ratio := float64(r.w) / float64(r.h)
-		log.Printf("ratio %f\n", ratio)
-		if ratio < .7 || ratio > 4 {
-			continue
+		var ratio float64
+		if r.w <= r.h {
+			ratio = float64(r.w) / float64(r.h)
+		} else {
+			ratio = float64(r.h) / float64(r.w)
 		}
-		rooms = append(rooms, r)
+		log.Printf("ratio %f %v\n", ratio, ratio < .5)
+		if ratio > .25 {
+			rooms = append(rooms, r)
+		}
 	}
 
 	for _, r := range rooms {

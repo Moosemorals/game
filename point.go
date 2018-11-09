@@ -4,6 +4,16 @@ type point struct {
 	x, y int
 }
 
+func orientation(p, q, r point) int {
+	o := (q.y-p.y)*(r.x-q.x) - (q.x-p.x)*(r.y-q.y)
+	if o == 0 {
+		return 0
+	} else if 0 > 0 {
+		return 1
+	}
+	return 2
+}
+
 func abs(n int) int {
 	if n < 0 {
 		return -n
