@@ -1,5 +1,7 @@
 package main
 
+import termbox "github.com/nsf/termbox-go"
+
 type logger struct {
 	lines   []string
 	display int
@@ -18,6 +20,9 @@ func (l *logger) upTo() int {
 
 func (l *logger) draw(p point) {
 	for i := 0; i < l.upTo(); i++ {
-		drawString(p.add(point{0, i}), l.lines[len(l.lines)-(i+1)])
+		line := l.lines[len(l.lines)-(i+1)]
+		for j, c := range line {
+			drawGlyph(p.add(point{j, i}), glyph(c), termbox.ColorCyan, termbox.ColorBlack)
+		}
 	}
 }

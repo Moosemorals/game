@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/nsf/termbox-go"
 	"log"
 	"math/rand"
 	"os"
+
+	"github.com/nsf/termbox-go"
 )
 
 type keyHandler interface {
@@ -45,10 +46,9 @@ func cap(min, max, value int) int {
 		return value
 	}
 }
-func drawString(at point, msg string) {
-	for i, c := range msg {
-		termbox.SetCell(at.x+i, at.y, c, termbox.ColorBlue, termbox.ColorBlack)
-	}
+
+func drawGlyph(at point, g glyph, fg, bg termbox.Attribute) {
+	termbox.SetCell(at.x, at.y, rune(g), fg, bg)
 }
 
 func main() {
@@ -74,10 +74,12 @@ func main() {
 
 	context.level.visit(context.player.point)
 
+	context.log("Welcome!")
 	if false {
 		os.Exit(0)
 	}
 
+	log.Println("Initilizing termbox")
 	err := termbox.Init()
 	if err != nil {
 		log.Panic(err)

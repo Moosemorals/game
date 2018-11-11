@@ -6,7 +6,7 @@ import (
 
 type sprite struct {
 	point
-	c rune
+	c glyph
 }
 
 func (s *sprite) move(dx, dy int, c *context) {
@@ -43,5 +43,5 @@ func (s *sprite) handleKeyEvent(e termbox.Event, context *context) {
 }
 
 func (s *sprite) draw() {
-	drawString(s.point, string(s.c))
+	drawGlyph(s.point, s.c, termbox.ColorWhite, termbox.ColorBlack)
 }

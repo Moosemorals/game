@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/nsf/termbox-go"
 	"log"
+
+	"github.com/nsf/termbox-go"
 )
 
 type attr uint32
@@ -134,7 +135,7 @@ func (l *level) draw() {
 			} else {
 				c = ' '
 			}
-			drawString(p, string(c))
+			drawGlyph(p, c, termbox.ColorDefault, termbox.ColorBlack)
 		}
 	}
 }
