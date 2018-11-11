@@ -35,3 +35,13 @@ I'll have a think about it.
 ## Links
 
  Room generation code loosley based on https://eskerda.com/bsp-dungeon-generation/
+
+
+ ## Drawing corridors
+
+     |.|
+     |.|
+    ----
+     ...
+     ---
+

@@ -43,6 +43,86 @@ func (l *level) tile(p point) tiler {
 	return l.layout[l.toIndex(p)]
 }
 
+func (l *level) drawCorridor(start, end point) {
+	if start.x == end.x && start.y == end.y {
+		log.Panicln("Skipping")
+		// Degenerate case, both ends in the same place
+		return
+	} else if start.x == end.x {
+		if start.y < end.y {
+			for i := start.y; i < end.y; i++ {
+				w := point{start.x, i}
+				l.setTile(w, new(floor))
+				w.x = start.x - 1
+				t := l.tile(w)
+				if t == nil {
+					l.setTile(w, &wall{wallVertical})
+				} else if t.glyph() == wallHorizontal {
+					t := l.tile(point{w.x, w.y + 1})
+					if t != nil {
+						l.setTile(w, &wall{wallBottomRight})
+					} else {
+						l.setTile(w, &wall{wallTopRight})
+					}
+				}
+				w.x = start.x + 1
+				t = l.tile(w)
+				if t == nil {
+					l.setTile(w, &wall{wallVertical})
+				} else if t.glyph() == wallHorizontal {
+					t := l.tile(point{w.x, w.y + 1})
+					if t != nil {
+						l.setTile(w, &wall{wallBottomLeft})
+					} else {
+						l.setTile(w, &wall{wallTopLeft})
+					}
+				}
+			}
+		} else {
+			l.drawCorridor(end, start)
+		}
+	} else if start.y == end.y {
+		if start.x < end.x {
+			for i := start.x; i < end.x; i++ {
+				w := point{i, start.y}
+				l.setTile(w, new(floor))
+				w.y = start.y - 1
+				t := l.tile(w)
+				if t == nil {
+					l.setTile(w, &wall{wallHorizontal})
+				} else if t.glyph() == wallVertical {
+					t := l.tile(point{w.x + 1, w.y})
+					if t != nil {
+						l.setTile(w, &wall{wallBottomRight})
+					} else {
+						l.setTile(w, &wall{wallBottomLeft})
+					}
+				}
+				w.y = start.y + 1
+				t = l.tile(w)
+				if t == nil {
+					l.setTile(w, &wall{wallHorizontal})
+				} else if t.glyph() == wallVertical {
+					t := l.tile(point{w.x + 1, w.y})
+					if t != nil {
+						l.setTile(w, &wall{wallTopRight})
+					} else {
+						l.setTile(w, &wall{wallTopLeft})
+					}
+
+				}
+			}
+		} else {
+			l.drawCorridor(end, start)
+		}
+	} else {
+		if start.x < end.x && start.y < end.y {
+			l.drawCorridor(start, point{start.x, end.y})
+			l.drawCorridor(point{start.x, end.y}, end)
+		}
+	}
+}
+
 func (l *level) draw() {
 	var p point
 	for p.x = 0; p.x < l.width; p.x++ {
@@ -59,15 +139,8 @@ func (l *level) draw() {
 	}
 }
 
-func makeLevel(w, h int) *level {
-	var l = level{
-		width:      w,
-		height:     h,
-		layout:     make([]tiler, w*h),
-		attributes: make([]attr, w*h),
-	}
-
-	tree := buildRooms(&room{0, 0, w - 1, h - 1}, 4)
+func (l *level) drawRooms() []*room {
+	tree := buildRooms(&room{0, 0, l.width - 1, l.height - 1}, 4)
 	candidates := tree.rooms()
 
 	var rooms []*room
@@ -89,8 +162,29 @@ func makeLevel(w, h int) *level {
 	}
 
 	for _, r := range rooms {
-		r.draw(&l)
+		r.draw(l)
 	}
+	return rooms
+}
+
+func (l *level) drawCorridors(rooms []*room) {
+	l.drawCorridor(point{3, 5}, point{20, 5})
+	l.drawCorridor(point{5, 3}, point{5, 20})
+	l.drawCorridor(point{20, 10}, point{3, 10})
+	l.drawCorridor(point{10, 20}, point{10, 3})
+
+	l.drawCorridor(point{30, 5}, point{50, 25})
+}
+
+func makeLevel(w, h int) *level {
+	var l = level{
+		width:      w,
+		height:     h,
+		layout:     make([]tiler, w*h),
+		attributes: make([]attr, w*h),
+	}
+
+	l.drawCorridors(nil)
 	log.Println("Done with make")
 
 	return &l
