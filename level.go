@@ -46,7 +46,6 @@ func (l *level) tile(p point) tiler {
 
 func (l *level) drawCorridor(start, end point) {
 	if start.x == end.x && start.y == end.y {
-		log.Panicln("Skipping")
 		// Degenerate case, both ends in the same place
 		return
 	} else if start.x == end.x {
@@ -168,15 +167,6 @@ func (l *level) drawRooms() []*room {
 	return rooms
 }
 
-func (l *level) drawCorridors(rooms []*room) {
-	l.drawCorridor(point{3, 5}, point{20, 5})
-	l.drawCorridor(point{5, 3}, point{5, 20})
-	l.drawCorridor(point{20, 10}, point{3, 10})
-	l.drawCorridor(point{10, 20}, point{10, 3})
-
-	l.drawCorridor(point{30, 5}, point{50, 25})
-}
-
 func makeLevel(w, h int) *level {
 	var l = level{
 		width:      w,
@@ -185,9 +175,13 @@ func makeLevel(w, h int) *level {
 		attributes: make([]attr, w*h),
 	}
 
-	l.drawCorridors(nil)
-	log.Println("Done with make")
+	rooms := l.drawRooms()
 
+	for i, left := range rooms {
+		for _, right := range rooms[:i+1] {
+			left.link(right, &l)
+		}
+	}
 	return &l
 }
 

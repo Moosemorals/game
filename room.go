@@ -32,6 +32,35 @@ func (n *node) rooms() []*room {
 	return []*room{n.box}
 }
 
+func (r *room) link(d *room, l *level) {
+	var start, end point
+	if d.x+d.w+1 > r.x && d.x < r.x+r.w-1 {
+		// Horizontal overlap
+		if r.x >= d.x {
+			start.x = r.x + (((d.x + d.w) - r.x) / 2)
+		} else {
+			start.x = d.x + (((r.x + r.w) - d.x) / 2)
+		}
+		start.y = r.y + r.h - 1
+		end.x = start.x
+		end.y = d.y + 1
+		l.drawCorridor(start, end)
+	}
+	if d.y+d.h+1 > r.y && d.y < r.y+r.h-1 {
+		// vertical overlap
+		if r.y >= d.y {
+			start.y = r.y + (((d.y + d.h) - r.y) / 2)
+		} else {
+			start.y = d.y + (((r.y + r.h) - d.y) / 2)
+		}
+		start.x = r.x + r.w - 1
+		end.y = start.y
+		end.x = d.x + 1
+		l.drawCorridor(start, end)
+	}
+
+}
+
 func splitRoom(r *room, vh bool) (left, right *room) {
 	var split int
 	if vh {
