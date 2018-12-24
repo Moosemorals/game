@@ -16,10 +16,6 @@ type room struct {
 	x, y, w, h int
 }
 
-func (r *room) center() point {
-	return point{r.x + r.w/2, r.y + r.h/2}
-}
-
 type node struct {
 	box         *room
 	left, right *node
@@ -30,6 +26,10 @@ func (n *node) rooms() []*room {
 		return append(n.left.rooms(), n.right.rooms()...)
 	}
 	return []*room{n.box}
+}
+
+func (r *room) center() point {
+	return point{r.x + r.w/2, r.y + r.h/2}
 }
 
 func (r *room) link(d *room, l *level) {
@@ -58,7 +58,15 @@ func (r *room) link(d *room, l *level) {
 		end.x = d.x + 1
 		l.drawCorridor(start, end)
 	}
+}
 
+const (
+	overlapHorizontal int = 1 << iota
+	overlapVertical
+)
+
+func (r *room) overlaps(d *room) int {
+	return d.x
 }
 
 func splitRoom(r *room, vh bool) (left, right *room) {
